@@ -2,21 +2,24 @@ from pathlib import Path
 import yaml
 
 LOG_FILE = Path("logs/security_events.log")
-RULE_FILE = Path("detections/brute_force_detection.yml")
+BRUTE_FORCE_RULE = Path("detections/brute_force_detection.yml")
+POWERSHELL_RULE = Path("detections/powershell_detection.yml")
 REPORT_FILE = Path("reports/soc_alert_report.txt")
 
 
-def load_detection_rule():
-    with RULE_FILE.open("r") as file:
+def load_rule(rule_file):
+    with rule_file.open("r") as file:
         return yaml.safe_load(file)
 
 
 def analyze_events():
-    rule = load_detection_rule()
+    brute_force_rule = load_rule(BRUTE_FORCE_RULE)
+    powershell_rule = load_rule(POWERSHELL_RULE)
 
     failed_logins = []
     successful_logins = []
     suspicious_events = []
+    powershell_events = []
 
     with LOG_FILE.open("r") as file:
         for line in file:
@@ -38,18 +41,44 @@ def analyze_events():
                     "Administrator privileges assigned: " + line
                 )
 
+            if (
+                "EventID=4688" in line
+                and "Process=powershell.exe" in line
+            ):
+                powershell_events.append(line)
+
     alerts = []
 
-    threshold = rule["threshold"]["count"]
+    # Brute-force detection
+    threshold = brute_force_rule["threshold"]["count"]
 
     if len(failed_logins) >= threshold:
         alerts.append(
-            f"ALERT: {rule['name']}\n"
-            f"MITRE ATT&CK: {rule['mitre_attack']['technique_id']} - "
-            f"{rule['mitre_attack']['technique_name']}\n"
-            f"Severity: {rule['severity']}"
+            f"ALERT: {brute_force_rule['name']}\n"
+            f"MITRE ATT&CK: "
+            f"{brute_force_rule['mitre_attack']['technique_id']} - "
+            f"{brute_force_rule['mitre_attack']['technique_name']}\n"
+            f"Severity: {brute_force_rule['severity']}"
         )
 
+    # PowerShell detection
+    if powershell_events:
+        powershell_alert = (
+            f"ALERT: {powershell_rule['name']}\n"
+            f"MITRE ATT&CK: "
+            f"{powershell_rule['mitre_attack']['technique_id']} - "
+            f"{powershell_rule['mitre_attack']['technique_name']}\n"
+            f"Severity: {powershell_rule['severity']}\n"
+            f"Events Detected: {len(powershell_events)}\n"
+            "Evidence:"
+        )
+
+        for event in powershell_events:
+            powershell_alert += f"\n  {event}"
+
+        alerts.append(powershell_alert)
+
+    # Account creation and privilege detection
     for event in suspicious_events:
 
         if "New user account created" in event:
@@ -65,6 +94,7 @@ def analyze_events():
                 "Severity: HIGH"
             )
 
+    # Build report
     report = []
 
     report.append("================================")
@@ -74,6 +104,7 @@ def analyze_events():
     report.append(f"Failed Logins: {len(failed_logins)}")
     report.append(f"Successful Logins: {len(successful_logins)}")
     report.append(f"Suspicious Events: {len(suspicious_events)}")
+    report.append(f"PowerShell Events: {len(powershell_events)}")
     report.append("")
     report.append("ALERTS")
     report.append("--------------------------------")
@@ -83,7 +114,6 @@ def analyze_events():
         report.append("--------------------------------")
 
     REPORT_FILE.parent.mkdir(exist_ok=True)
-
     REPORT_FILE.write_text("\n".join(report))
 
     print("=== Windows SOC Lab ===")
@@ -91,6 +121,7 @@ def analyze_events():
     print(f"Failed Logins: {len(failed_logins)}")
     print(f"Successful Logins: {len(successful_logins)}")
     print(f"Suspicious Events: {len(suspicious_events)}")
+    print(f"PowerShell Events: {len(powershell_events)}")
     print()
     print(f"Alerts Generated: {len(alerts)}")
     print(f"Report Created: {REPORT_FILE}")

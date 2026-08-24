@@ -1,0 +1,21 @@
+name: Suspicious PowerShell Execution
+
+description: Detects PowerShell process execution on a Windows system.
+
+severity: MEDIUM
+
+mitre_attack:
+  technique_id: T1059.001
+  technique_name: PowerShell
+
+event:
+  event_id: 4688
+
+process:
+  name: powershell.exe
+
+response:
+  - Identify the user who launched PowerShell
+  - Review the parent process
+  - Review the PowerShell command line
+  - Determine whether the activity was authorized

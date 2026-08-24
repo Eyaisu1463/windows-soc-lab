@@ -5,12 +5,20 @@
 Failed Logins: 3
 Successful Logins: 2
 Suspicious Events: 2
+PowerShell Events: 1
 
 ALERTS
 --------------------------------
 ALERT: Multiple Failed Login Detection
 MITRE ATT&CK: T1110 - Brute Force
 Severity: HIGH
+--------------------------------
+ALERT: Suspicious PowerShell Execution
+MITRE ATT&CK: T1059.001 - PowerShell
+Severity: MEDIUM
+Events Detected: 1
+Evidence:
+  2026-08-23 09:15:27 EventID=4688 AccountName=alice Process=powershell.exe ParentProcess=explorer.exe
 --------------------------------
 ALERT: New user account created.
 MITRE ATT&CK: T1136 - Create Account
