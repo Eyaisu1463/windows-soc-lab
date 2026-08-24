@@ -1,0 +1,8 @@
+2026-08-23 09:10:15 EventID=4624 AccountName=alice LogonType=2 SourceIP=10.10.10.15 Status=Success
+2026-08-23 09:12:41 EventID=4625 AccountName=admin LogonType=3 SourceIP=10.10.10.50 Status=Failed
+2026-08-23 09:12:45 EventID=4625 AccountName=admin LogonType=3 SourceIP=10.10.10.50 Status=Failed
+2026-08-23 09:12:49 EventID=4625 AccountName=admin LogonType=3 SourceIP=10.10.10.50 Status=Failed
+2026-08-23 09:13:02 EventID=4624 AccountName=admin LogonType=3 SourceIP=10.10.10.50 Status=Success
+2026-08-23 09:15:27 EventID=4688 AccountName=alice Process=powershell.exe ParentProcess=explorer.exe
+2026-08-23 09:17:33 EventID=4720 AccountName=temp_admin Action=UserCreated
+2026-08-23 09:20:11 EventID=4672 AccountName=temp_admin Privilege=Administrator

@@ -1,0 +1,21 @@
+================================
+       WINDOWS SOC ALERT REPORT
+================================
+
+Failed Logins: 3
+Successful Logins: 2
+Suspicious Events: 2
+
+ALERTS
+--------------------------------
+ALERT: Multiple Failed Login Detection
+MITRE ATT&CK: T1110 - Brute Force
+Severity: HIGH
+--------------------------------
+ALERT: New user account created.
+MITRE ATT&CK: T1136 - Create Account
+Severity: MEDIUM
+--------------------------------
+ALERT: Administrator privileges assigned.
+Severity: HIGH
+--------------------------------

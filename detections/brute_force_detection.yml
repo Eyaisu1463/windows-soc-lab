@@ -1,0 +1,20 @@
+name: Multiple Failed Login Detection
+
+description: Detects multiple failed Windows logon attempts.
+
+severity: HIGH
+
+mitre_attack:
+  technique_id: T1110
+  technique_name: Brute Force
+
+event:
+  event_id: 4625
+
+threshold:
+  count: 3
+
+response:
+  - Investigate source IP
+  - Validate account activity
+  - Review successful logons following failed attempts
