@@ -1,0 +1,19 @@
+name: Windows Account Creation Detection
+
+description: Detects creation of a new Windows user account.
+
+severity: MEDIUM
+
+mitre_attack:
+  technique_id: T1136.001
+  technique_name: Create Account - Local Account
+
+event:
+  event_id: 4720
+
+response:
+  - Identify the account that was created
+  - Identify the account that created the new user
+  - Determine whether the account creation was authorized
+  - Review subsequent activity by the new account
+  - Check whether administrative privileges were assigned

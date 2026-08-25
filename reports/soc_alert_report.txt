@@ -6,6 +6,7 @@ Failed Logins: 3
 Successful Logins: 2
 Suspicious Events: 2
 PowerShell Events: 1
+Account Creation Events: 1
 
 ALERTS
 --------------------------------
@@ -20,9 +21,12 @@ Events Detected: 1
 Evidence:
   2026-08-23 09:15:27 EventID=4688 AccountName=alice Process=powershell.exe ParentProcess=explorer.exe
 --------------------------------
-ALERT: New user account created.
-MITRE ATT&CK: T1136 - Create Account
+ALERT: Windows Account Creation Detection
+MITRE ATT&CK: T1136.001 - Create Account - Local Account
 Severity: MEDIUM
+Events Detected: 1
+Evidence:
+  2026-08-23 09:17:33 EventID=4720 AccountName=temp_admin Action=UserCreated
 --------------------------------
 ALERT: Administrator privileges assigned.
 Severity: HIGH

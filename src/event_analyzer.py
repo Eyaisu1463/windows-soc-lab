@@ -4,24 +4,27 @@ import yaml
 LOG_FILE = Path("logs/security_events.log")
 BRUTE_FORCE_RULE = Path("detections/brute_force_detection.yml")
 POWERSHELL_RULE = Path("detections/powershell_detection.yml")
+ACCOUNT_CREATION_RULE = Path("detections/account_creation_detection.yml")
 REPORT_FILE = Path("reports/soc_alert_report.txt")
 
 
 def load_rule(rule_file):
-    with rule_file.open("r") as file:
+    with rule_file.open("r", encoding="utf-8") as file:
         return yaml.safe_load(file)
 
 
 def analyze_events():
     brute_force_rule = load_rule(BRUTE_FORCE_RULE)
     powershell_rule = load_rule(POWERSHELL_RULE)
+    account_creation_rule = load_rule(ACCOUNT_CREATION_RULE)
 
     failed_logins = []
     successful_logins = []
     suspicious_events = []
     powershell_events = []
+    account_creation_events = []
 
-    with LOG_FILE.open("r") as file:
+    with LOG_FILE.open("r", encoding="utf-8") as file:
         for line in file:
             line = line.strip()
 
@@ -32,6 +35,7 @@ def analyze_events():
                 successful_logins.append(line)
 
             if "EventID=4720" in line:
+                account_creation_events.append(line)
                 suspicious_events.append(
                     "New user account created: " + line
                 )
@@ -78,21 +82,32 @@ def analyze_events():
 
         alerts.append(powershell_alert)
 
-    # Account creation and privilege detection
-    for event in suspicious_events:
+    # Account creation detection
+    if account_creation_events:
+        account_alert = (
+            f"ALERT: {account_creation_rule['name']}\n"
+            f"MITRE ATT&CK: "
+            f"{account_creation_rule['mitre_attack']['technique_id']} - "
+            f"{account_creation_rule['mitre_attack']['technique_name']}\n"
+            f"Severity: {account_creation_rule['severity']}\n"
+            f"Events Detected: {len(account_creation_events)}\n"
+            "Evidence:"
+        )
 
-        if "New user account created" in event:
-            alerts.append(
-                "ALERT: New user account created.\n"
-                "MITRE ATT&CK: T1136 - Create Account\n"
-                "Severity: MEDIUM"
-            )
+        for event in account_creation_events:
+            account_alert += f"\n  {event}"
 
-        if "Administrator privileges assigned" in event:
-            alerts.append(
-                "ALERT: Administrator privileges assigned.\n"
-                "Severity: HIGH"
-            )
+        alerts.append(account_alert)
+
+    # Administrator privilege detection
+    if any(
+        "Administrator privileges assigned" in event
+        for event in suspicious_events
+    ):
+        alerts.append(
+            "ALERT: Administrator privileges assigned.\n"
+            "Severity: HIGH"
+        )
 
     # Build report
     report = []
@@ -105,6 +120,9 @@ def analyze_events():
     report.append(f"Successful Logins: {len(successful_logins)}")
     report.append(f"Suspicious Events: {len(suspicious_events)}")
     report.append(f"PowerShell Events: {len(powershell_events)}")
+    report.append(
+        f"Account Creation Events: {len(account_creation_events)}"
+    )
     report.append("")
     report.append("ALERTS")
     report.append("--------------------------------")
@@ -114,7 +132,10 @@ def analyze_events():
         report.append("--------------------------------")
 
     REPORT_FILE.parent.mkdir(exist_ok=True)
-    REPORT_FILE.write_text("\n".join(report))
+    REPORT_FILE.write_text(
+        "\n".join(report),
+        encoding="utf-8"
+    )
 
     print("=== Windows SOC Lab ===")
     print()
@@ -122,6 +143,9 @@ def analyze_events():
     print(f"Successful Logins: {len(successful_logins)}")
     print(f"Suspicious Events: {len(suspicious_events)}")
     print(f"PowerShell Events: {len(powershell_events)}")
+    print(
+        f"Account Creation Events: {len(account_creation_events)}"
+    )
     print()
     print(f"Alerts Generated: {len(alerts)}")
     print(f"Report Created: {REPORT_FILE}")
